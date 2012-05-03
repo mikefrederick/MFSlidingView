@@ -2,11 +2,12 @@
 //  MFSlidingView.h
 //
 //  Created by Michael Frederick on 7/13/11.
-//  Copyright 2011 University of Wisconsin - Madison. All rights reserved.
+//  Copyright 2011 Michael Frederick. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
 
+// where should the view slide in from?
 typedef enum {
     LeftOfScreen,
     RightOfScreen,
@@ -14,6 +15,7 @@ typedef enum {
     BelowScreen
 } SlidingViewOffScreenPosition;
 
+// where should the view slide in to?
 typedef enum {
     BottomOfScreen,
     MiddleOfScreen,
@@ -21,13 +23,11 @@ typedef enum {
 } SlidingViewOnScreenPosition;
 
 typedef enum {
-    ShowToolbar = 1,
-    ShowDoneButton = 2,
-    ShowCancelButton = 4,
-    AvoidKeyboard = 8,
-    CancelOnBackgroundPressed = 16,
-    FitSizeToContentView = 32,
-    PositionToolbarOnBottom = 64
+    ShowDoneButton = 1, // show a done button on the toolbar
+    ShowCancelButton = 2, // show a cancel button on the toolbar
+    AvoidKeyboard = 4, // useful with a uitextfield or uitextview in the content view
+    CancelOnBackgroundPressed = 8, // cancelBlock will be executed when background tapped
+    PositionToolbarOnBottom = 16 // position the toolbar on the bottom of the content view
 } SlidingViewOptions;
 
 

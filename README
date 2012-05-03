@@ -1,0 +1,42 @@
+MFSlidingView
+================
+Sometimes it's nice to be able to present a nice overlay view without having to present a whole new view controller. MFSlidingView helps animate views on top of your current view.
+
+Screenshots
+==========
+![image](http://i.imgur.com/Y8NHq.png)
+
+Features
+==========
+* Ability to easily configure the start and stop positions of the sliding animation (i.e. slide a view from below the screen to the middle of the screen, or from above the screen to the top of the screen).
+* Option to display a toolbar above or below your view.
+* Option to display a title, cancel button, and/or done button on the toolbar.
+* Option to dismiss the view when the background is pressed.
+* Option to perform keyboard avoidance for UITextFields and UITextViews.
+* Usage of blocks for dismissal actions.
+
+
+Usage
+==========
+
+###Minimum Configuration
+	[MFSlidingView slideView:[[[UIDatePicker alloc] init] autorelease] intoView:self.view 
+	                onScreenPosition:BottomOfScreen];              
+                
+###Medium Configuration
+	[MFSlidingView slideView:viewToSlideIn intoView:viewToSlideInTo
+	                onScreenPosition:MiddleOfScreen offScreenPosition:LeftOfScreen];
+                
+###Full Configuration
+	SlidingViewOptions options = ShowDoneButton|ShowCancelButton|CancelOnBackgroundPressed|AvoidKeyboard;
+	void (^cancelOrDoneBlock)() = ^{ 
+	     // we must manually slide out the view out if we specify this block
+	     [MFSlidingView slideOut];
+	 };
+
+	[MFSlidingView slideView:viewToSlideIn intoView:self.view 
+	         onScreenPosition:BottomOfScreen 
+	        offScreenPosition:BelowScreen title:@"Avoid Keyboard"
+	                  options:options 
+	                doneBlock:cancelOrDoneBlock 
+	              cancelBlock:cancelOrDoneBlock];

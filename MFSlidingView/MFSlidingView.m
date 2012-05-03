@@ -2,29 +2,31 @@
 //  MFSlidingView.m
 //
 //  Created by Michael Frederick on 7/13/11.
-//  Copyright 2011 University of Wisconsin - Madison. All rights reserved.
+//  Copyright 2011 Michael Frederick. All rights reserved.
 //
 
 #import "MFSlidingView.h"
 #import <QuartzCore/QuartzCore.h>
-#import "UI.h"
 
 #define BITMASK_CONTAINS_OPTION(bitmask,option) ((bitmask & option) == option)
 
 typedef void (^MFBlock)(void);
 
 @interface MFSlidingView () {
+    // contains the content view + the toolbar
     UIView *bodyView;
+    // used for keyboard avoidance
     CGRect framePriorToKeyboardMovement;
 }
 
+
 @property (nonatomic, assign) UIView *containerView;
+// the view that is "sliding in"
 @property (nonatomic, assign) UIView *contentView;
 @property (nonatomic, readonly) BOOL showDoneButton;
 @property (nonatomic, readonly) BOOL showCancelButton;
 @property (nonatomic, readonly) BOOL showToolbar;
 @property (nonatomic, readonly) BOOL avoidKeyboard;
-@property (nonatomic, readonly) BOOL fitSizeToContentView;
 @property (nonatomic, readonly) BOOL positionToolbarOnBottom;
 @property (nonatomic, assign) SlidingViewOptions options;
 @property (nonatomic, assign) SlidingViewOnScreenPosition finalPosition;
@@ -54,7 +56,6 @@ typedef void (^MFBlock)(void);
 @synthesize showCancelButton;
 @synthesize showToolbar;
 @synthesize avoidKeyboard;
-@synthesize fitSizeToContentView;
 @synthesize contentView;
 @synthesize options;
 @synthesize initialPosition;
@@ -90,9 +91,8 @@ static MFSlidingView *sharedView = nil;
   onScreenPosition:(SlidingViewOnScreenPosition)onScreenPosition 
  offScreenPosition:(SlidingViewOffScreenPosition)offScreenPosition {
     
-    SlidingViewOptions options = ShowToolbar|ShowDoneButton|ShowCancelButton|CancelOnBackgroundPressed;
-    if(onScreenPosition == MiddleOfScreen) options = options|FitSizeToContentView;
-    else if (onScreenPosition == TopOfScreen) options = options|PositionToolbarOnBottom;
+    SlidingViewOptions options = ShowDoneButton|ShowCancelButton|CancelOnBackgroundPressed;
+    if (onScreenPosition == TopOfScreen) options = options|PositionToolbarOnBottom;
     
     return [MFSlidingView slideView:view intoView:wrapper 
             onScreenPosition:onScreenPosition offScreenPosition:offScreenPosition
@@ -155,16 +155,11 @@ static MFSlidingView *sharedView = nil;
 }
 
 - (BOOL) showToolbar {
-    if(self.showDoneButton || self.showCancelButton || self.title) return YES;
-    return BITMASK_CONTAINS_OPTION(self.options, ShowToolbar);
+    return (self.showDoneButton || self.showCancelButton || self.title);
 }
 
 - (BOOL) avoidKeyboard {
     return BITMASK_CONTAINS_OPTION(self.options, AvoidKeyboard);
-}
-
-- (BOOL) fitSizeToContentView {
-    return BITMASK_CONTAINS_OPTION(self.options, FitSizeToContentView);
 }
 
 - (BOOL) positionToolbarOnBottom {
@@ -203,7 +198,6 @@ static MFSlidingView *sharedView = nil;
     
     CGFloat y = (self.positionToolbarOnBottom) ? self.contentFrame.size.height : 0;
     self.toolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, y, bodyView.frame.size.width, 44)];
-    self.toolbar.tintColor = kDarkBlueColor;
     
     NSMutableArray *toolbarItems = [NSMutableArray new];
     
@@ -226,11 +220,8 @@ static MFSlidingView *sharedView = nil;
 
 - (CGPoint) offScreenCoordinates {
     CGRect frame = [self bodyFrame];
-    CGPoint initialCoordinates = CGPointZero;
-    CGPoint finalCoordinates = [self onScreenCoordinates];;
-    if(self.fitSizeToContentView) {
-        initialCoordinates.x = (self.containerView.bounds.size.width - frame.size.width)/2;
-    }
+    CGPoint initialCoordinates = CGPointMake((self.containerView.bounds.size.width - frame.size.width)/2, 0);
+    CGPoint finalCoordinates = [self onScreenCoordinates];
     
     switch (self.initialPosition) {
         case BelowScreen:
@@ -256,12 +247,8 @@ static MFSlidingView *sharedView = nil;
 
 - (CGPoint) onScreenCoordinates {
     CGRect frame = [self bodyFrame];
-    CGPoint finalCoordinates = CGPointZero;
-    
-    if(self.fitSizeToContentView) {
-        finalCoordinates.x = (self.containerView.bounds.size.width - frame.size.width)/2;
-    }
-    
+    CGPoint finalCoordinates = CGPointMake((self.containerView.bounds.size.width - frame.size.width)/2, 0);
+
     switch (self.finalPosition) {
         case TopOfScreen:
             finalCoordinates.y = 0.0;
@@ -277,6 +264,7 @@ static MFSlidingView *sharedView = nil;
     return finalCoordinates;
 }
 
+// frame of the content view
 - (CGRect) contentFrame {
     CGRect frame = self.contentView.frame;
     frame.origin.x = 0;
@@ -284,6 +272,7 @@ static MFSlidingView *sharedView = nil;
     return frame;
 }
 
+// frame of the content view + toolbar
 - (CGRect) bodyFrame {
     CGRect frame = bodyView.frame;
     frame.size = self.contentView.frame.size;
@@ -304,7 +293,7 @@ static MFSlidingView *sharedView = nil;
                                                      name:UIKeyboardWillHideNotification object:nil];
     }
     
-    if(self.fitSizeToContentView) {
+    if(self.contentView.frame.size.width < self.containerView.frame.size.width) {
         bodyView.backgroundColor = [UIColor blackColor];
         bodyView.clipsToBounds = YES;
         bodyView.layer.cornerRadius = 5;
@@ -367,12 +356,12 @@ static MFSlidingView *sharedView = nil;
 
 - (void) cancelPressed:(id)sender {
     if(self.cancelBlock) self.cancelBlock();
-    [self slideOut];
+    else [self slideOut];
 }
 
 - (void) donePressed:(id)sender {
     if(self.doneBlock) self.doneBlock();
-    [self slideOut];
+    else [self slideOut];
 }
 
 // Search recursively for first responder
