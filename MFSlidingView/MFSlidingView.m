@@ -292,6 +292,12 @@ static MFSlidingView *sharedView = nil;
                                                  selector:@selector(keyboardWillHide:) 
                                                      name:UIKeyboardWillHideNotification object:nil];
     }
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(orientationDidChange:)
+                                                 name:UIDeviceOrientationDidChangeNotification object:nil];
+
+    
     
     if(self.contentView.frame.size.width < self.containerView.frame.size.width) {
         bodyView.backgroundColor = [UIColor blackColor];
@@ -450,6 +456,23 @@ static MFSlidingView *sharedView = nil;
     if((self.options & CancelOnBackgroundPressed) == CancelOnBackgroundPressed) {
         [self cancelPressed:nil];
     }
+}
+
+- (void)orientationDidChange:(NSNotification *)notification {
+    CGRect frame;
+    
+    frame.size = self.containerView.frame.size;
+    frame.origin = CGPointMake(0, 0);
+    self.frame = frame;
+    
+    [UIView beginAnimations:@"slideIn" context:nil];
+    [UIView setAnimationDelegate:self];
+    
+    frame = self.bodyFrame;
+    frame.origin = [self onScreenCoordinates];
+    bodyView.frame = frame;
+    
+    [UIView commitAnimations];   
 }
 
 @end
