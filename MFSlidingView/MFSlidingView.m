@@ -105,8 +105,8 @@ static MFSlidingView *sharedView = nil;
  offScreenPosition:(SlidingViewOffScreenPosition)offScreenPosition
              title:(NSString *)title 
            options:(SlidingViewOptions)options
-         doneBlock:(void (^)())doneBlock
-       cancelBlock:(void (^)())cancelBlock {
+         doneBlock:(void (^)(void))doneBlock
+       cancelBlock:(void (^)(void))cancelBlock {
     
     MFSlidingView *slidingView = [[MFSlidingView alloc] initWithContentView:view];
     slidingView.doneBlock = doneBlock;
