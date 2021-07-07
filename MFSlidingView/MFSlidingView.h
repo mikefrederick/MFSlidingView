@@ -48,8 +48,8 @@ typedef enum {
  offScreenPosition:(SlidingViewOffScreenPosition)offScreenPosition
              title:(NSString *)title
            options:(SlidingViewOptions)options
-         doneBlock:(void (^)())doneBlock
-       cancelBlock:(void (^)())cancelBlock;
+         doneBlock:(void (^)(void))doneBlock
+       cancelBlock:(void (^)(void))cancelBlock;
 
 + (void) slideOut;
 
