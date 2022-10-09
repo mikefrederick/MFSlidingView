@@ -323,14 +323,15 @@ static MFSlidingView *sharedView = nil;
     [bodyView addSubview:self.contentView];
     
     // slide in animation
-    [UIView beginAnimations:@"slideIn" context:nil];
-    [UIView setAnimationDelegate:self];
-    
-    frame.origin = [self onScreenCoordinates];
-    bodyView.frame = frame;
-    self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.55];
-   
-    [UIView commitAnimations];
+    [UIView animateWithDuration:0.25 animations:^{
+        CGRect newFrame = frame;
+        newFrame.origin = [self onScreenCoordinates];
+        self->bodyView.frame = newFrame;
+        self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.55];
+
+    } completion:^(BOOL finished) {
+        
+    }];
     
     framePriorToKeyboardMovement = bodyView.frame;
 }
@@ -339,25 +340,15 @@ static MFSlidingView *sharedView = nil;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
-	[UIView beginAnimations:@"slideOut" context:nil];
-    [UIView setAnimationDelegate:self];
-    [UIView setAnimationDidStopSelector:@selector(animationDidStop:finished:context:)];
-    
-    CGRect frame = bodyView.frame;
-    frame.origin = [self offScreenCoordinates];
-    bodyView.frame = frame;
-    self.backgroundColor = [UIColor clearColor];
-    
-    [UIView commitAnimations]; 
-}
+    [UIView animateWithDuration:0.25 animations:^{
+        CGRect frame = self->bodyView.frame;
+        frame.origin = [self offScreenCoordinates];
+        self->bodyView.frame = frame;
+        self.backgroundColor = [UIColor clearColor];
 
-- (void)animationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context
-{
-    if ([animationID isEqualToString:@"slideOut"]) {
+    } completion:^(BOOL finished) {
         if(self.superview) [self removeFromSuperview];
-    } else if ([animationID isEqualToString:@"slideIn"]) {
-        
-    }
+    }];
 }
 
 - (void) cancelPressed:(id)sender {
@@ -392,12 +383,29 @@ static MFSlidingView *sharedView = nil;
     frame.origin.y = idealPosition - firstResponderBounds.origin.y;
     
     // Shrink view's height by the keyboard's height, and scroll to show the text field/view being edited
-    [UIView beginAnimations:nil context:NULL];
-    bodyView.frame = frame;
-    [UIView commitAnimations];
+    
+    [UIView animateWithDuration:0.25 animations:^{
+        self->bodyView.frame = frame;
+
+    } completion:^(BOOL finished) {
+    }];
+
     return YES;
 }
 
+static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCurve curve)
+{
+  switch (curve) {
+    case UIViewAnimationCurveEaseInOut:
+        return UIViewAnimationOptionCurveEaseInOut;
+    case UIViewAnimationCurveEaseIn:
+        return UIViewAnimationOptionCurveEaseIn;
+    case UIViewAnimationCurveEaseOut:
+        return UIViewAnimationOptionCurveEaseOut;
+    case UIViewAnimationCurveLinear:
+        return UIViewAnimationOptionCurveLinear;
+  }
+}
 
 - (void)keyboardWillShow:(NSNotification*)notification {
     UIView *firstResponder = [self findFirstResponderBeneathView:self];
@@ -421,14 +429,12 @@ static MFSlidingView *sharedView = nil;
     NSInteger animationCurve = [[[notification userInfo] 
                                  objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue];
     
-    // Shrink view's height by the keyboard's height, and scroll to show the text field/view being edited
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationCurve:animationCurve];
-    [UIView setAnimationDuration:animationDuration];
-    
-    bodyView.frame = frame;
-    
-    [UIView commitAnimations];
+    [UIView animateWithDuration:animationDuration delay:0 options:animationOptionsWithCurve(animationCurve) animations:^{
+        self->bodyView.frame = frame;
+        
+    } completion:^(BOOL finished) {
+        
+    }];
 }
 
 - (void)keyboardWillHide:(NSNotification*)notification {
@@ -438,13 +444,12 @@ static MFSlidingView *sharedView = nil;
                                  objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue];
     
     // Restore dimensions to prior size
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationCurve:animationCurve];
-    [UIView setAnimationDuration:animationDuration];
-    
-    bodyView.frame = framePriorToKeyboardMovement;
-    
-    [UIView commitAnimations];
+    [UIView animateWithDuration:animationDuration delay:0 options:animationCurve animations:^{
+        self->bodyView.frame = self->framePriorToKeyboardMovement;
+        
+    } completion:^(BOOL finished) {
+        
+    }];
 }
 
 -(void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
@@ -465,14 +470,15 @@ static MFSlidingView *sharedView = nil;
     frame.origin = CGPointMake(0, 0);
     self.frame = frame;
     
-    [UIView beginAnimations:@"slideIn" context:nil];
-    [UIView setAnimationDelegate:self];
-    
-    frame = self.bodyFrame;
-    frame.origin = [self onScreenCoordinates];
-    bodyView.frame = frame;
-    
-    [UIView commitAnimations];   
+    [UIView animateWithDuration:0.25 animations:^{
+        CGRect newFrame = self.bodyFrame;
+        newFrame.origin = [self onScreenCoordinates];
+        self->bodyView.frame = newFrame;
+
+        
+    } completion:^(BOOL finished) {
+        
+    }];
 }
 
 @end
