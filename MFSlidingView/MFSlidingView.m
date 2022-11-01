@@ -251,13 +251,13 @@ static MFSlidingView *sharedView = nil;
 
     switch (self.finalPosition) {
         case TopOfScreen:
-            finalCoordinates.y = 0.0;
+            finalCoordinates.y = self.containerView.safeAreaInsets.top;
             break;
         case MiddleOfScreen:
             finalCoordinates.y = (self.containerView.bounds.size.height - frame.size.height)/2;
             break;
         case BottomOfScreen:
-            finalCoordinates.y = self.containerView.bounds.size.height - frame.size.height;
+            finalCoordinates.y = self.containerView.bounds.size.height - frame.size.height - self.containerView.safeAreaInsets.bottom;
             break;
     }
     
